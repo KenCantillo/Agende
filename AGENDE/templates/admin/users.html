@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% set active_page = 'users' %}
+{% block title %}Users & Roles{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Users &amp; Roles</div>
+        <div class="page-subtitle">Every account in the system, across all roles.</div>
+    </div>
+</div>
+
+<div class="card-agende mb-3">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label mb-1">Search</label>
+            <input type="text" class="form-control" name="q" placeholder="Name or email" value="{{ search_query }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label mb-1">Role</label>
+            <select class="form-select" name="role">
+                <option value="">All Roles</option>
+                <option value="user" {% if role_filter == 'user' %}selected{% endif %}>User</option>
+                <option value="provider" {% if role_filter == 'provider' %}selected{% endif %}>Provider</option>
+                <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-outline-agende w-100">Filter</button>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive card-agende p-0">
+    <table class="table table-agende mb-0">
+        <thead>
+            <tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td>{{ u.name }}</td>
+                <td>{{ u.email }}</td>
+                <td class="text-capitalize">{{ u.role_name }}</td>
+                <td>{{ u.created_at.strftime('%b %d, %Y') }}</td>
+                <td><span class="status-badge {{ 'status-confirmed' if u.is_active else 'status-cancelled' }}">{{ 'Active' if u.is_active else 'Inactive' }}</span></td>
+                <td>
+                    {% if u.id != session.get('user_id') %}
+                    <form method="POST" action="{{ url_for('admin_toggle_user', target_user_id=u.id) }}" onsubmit="return confirmAction('{{ 'Deactivate' if u.is_active else 'Activate' }} this account?')">
+                        <button type="submit" class="btn btn-sm {{ 'btn-outline-danger' if u.is_active else 'btn-outline-agende' }}">
+                            {{ 'Deactivate' if u.is_active else 'Activate' }}
+                        </button>
+                    </form>
+                    {% else %}
+                    <span class="text-muted">This is you</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No users found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

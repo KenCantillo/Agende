@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}AGENDE{% endblock %} | AGENDE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+{% if session.get('user_id') %}
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <img class="brand-logo" src="{{ url_for('static', filename='img/agende-logo.png') }}" alt="AGENDE logo">
+        <div class="brand-name">AGENDE</div>
+        <div class="brand-sub">Multi-Appointment System</div>
+    </div>
+
+    {% if session.get('role') == 'user' %}
+        <div class="sidebar-section-title">Main</div>
+        <a class="sidebar-link {{ 'active' if active_page == 'dashboard' }}" href="{{ url_for('user_dashboard') }}"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+        <a class="sidebar-link {{ 'active' if active_page == 'appointments' }}" href="{{ url_for('user_appointments') }}"><i class="bi bi-journal-check"></i> My Appointments</a>
+        <a class="sidebar-link {{ 'active' if active_page == 'book' }}" href="{{ url_for('book_appointment') }}"><i class="bi bi-calendar-plus"></i> Book Appointment</a>
+        <a class="sidebar-link {{ 'active' if active_page == 'calendar' }}" href="{{ url_for('user_calendar') }}"><i class="bi bi-calendar3"></i> Calendar</a>
+        <a class="sidebar-link {{ 'active' if active_page == 'notifications' }}" href="{{ url_for('user_notifications') }}"><i class="bi bi-bell-fill"></i> Notifications</a>
+
+        <div class="sidebar-section-title">Personal</div>
+        <a class="sidebar-link {{ 'active' if active_page == 'history' }}" href="{{ url_for('user_history') }}"><i class="bi bi-clock-history"></i> Appointment History</a>
+        <a class="sidebar-link {{ 'active' if active_page == 'profile' }}" href="{{ url_for('user_profile') }}"><i class="bi bi-person-circle"></i> My Profile</a>
+{% elif session.get('role') == 'provider' %}
+        <div class="sidebar-section-title">Main</div>
+        <a class="sidebar-link {{ 'active' if active_page == 'dashboard' }}" href="{{ url_for('provider_dashboard') }}"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+        <a class="sidebar-link {{ 'active' if active_page == 'appointments' }}" href="{{ url_for('provider_appointments') }}"><i class="bi bi-journal-check"></i> My Appointments</a>
+        <a class="sidebar-link {{ 'active' if active_page == 'schedule' }}" href="{{ url_for('provider_schedule') }}"><i class="bi bi-calendar-week"></i> My Availability</a>
+        <a class="sidebar-link" href="{{ url_for('provider_blocked_periods') }}"><i class="bi bi-calendar-x"></i> Block Time</a>
+        <a class="sidebar-link {{ 'active' if active_page == 'notifications' }}" href="{{ url_for('provider_notifications') }}"><i class="bi bi-bell-fill"></i> Notifications</a>
+        <div class="sidebar-section-title">Personal</div>
+        <a class="sidebar-link {{ 'active' if active_page == 'profile' }}" href="{{ url_for('user_profile') }}"><i class="bi bi-person-circle"></i> My Profile</a>
+
+    {% elif session.get('role') == 'admin' %}
+        <div class="sidebar-section-title">Main</div>
+        <a class="sidebar-link {{ 'active' if active_page == 'dashboard' }}" href="{{ url_for('admin_dashboard') }}"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+        <a class="sidebar-link {{ 'active' if active_page == 'appointments' }}" href="{{ url_for('admin_appointments') }}"><i class="bi bi-journal-check"></i> Appointments</a>
+
+        <div class="sidebar-section-title">Manage</div>
+        <a class="sidebar-link {{ 'active' if active_page == 'clients' }}" href="{{ url_for('admin_clients') }}"><i class="bi bi-people-fill"></i> Clients</a>
+        <a class="sidebar-link {{ 'active' if active_page == 'providers' }}" href="{{ url_for('admin_providers') }}"><i class="bi bi-person-badge-fill"></i> Staff / Providers</a>
+        <a class="sidebar-link {{ 'active' if active_page == 'users' }}" href="{{ url_for('admin_users') }}"><i class="bi bi-shield-lock-fill"></i> Users &amp; Roles</a>
+        <a class="sidebar-link {{ 'active' if active_page == 'schedules' }}" href="{{ url_for('admin_schedules') }}"><i class="bi bi-calendar-week"></i> Schedules</a>
+        <a class="sidebar-link" href="{{ url_for('admin_services') }}"><i class="bi bi-briefcase"></i> Services</a>
+
+        <div class="sidebar-section-title">Insights</div>
+        <a class="sidebar-link {{ 'active' if active_page == 'analytics' }}" href="{{ url_for('admin_analytics') }}"><i class="bi bi-bar-chart-fill"></i> Analytics</a>
+        <a class="sidebar-link" href="{{ url_for('admin_forecast') }}"><i class="bi bi-graph-up-arrow"></i> Forecast</a>
+        <a class="sidebar-link" href="{{ url_for('admin_reports') }}"><i class="bi bi-file-earmark-spreadsheet"></i> Reports</a>
+        <a class="sidebar-link" href="{{ url_for('admin_audit_logs') }}"><i class="bi bi-shield-check"></i> Audit Logs</a>
+
+        <div class="sidebar-section-title">Personal</div>
+        <a class="sidebar-link {{ 'active' if active_page == 'profile' }}" href="{{ url_for('user_profile') }}"><i class="bi bi-person-circle"></i> My Profile</a>
+    {% endif %}
+
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <div class="sidebar-user-avatar">{{ session.get('name','?')[0]|upper }}</div>
+            <div>
+                <div class="sidebar-user-name">{{ session.get('name') }}</div>
+                <div class="sidebar-user-role">{{ session.get('role') }}</div>
+            </div>
+        </div>
+        <a class="sidebar-link mt-1" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i> Log Out</a>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="mobile-topbar">
+        <button class="btn btn-outline-agende btn-sm" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+        <span class="mobile-brand"><img src="{{ url_for('static', filename='img/agende-logo.png') }}" alt="" class="mobile-brand-logo"> AGENDE</span>
+        <span></span>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show alert-auto-hide" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</div>
+{% else %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 2000; width: 100%; max-width: 420px;">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show alert-auto-hide" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    {% block auth_content %}{% endblock %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

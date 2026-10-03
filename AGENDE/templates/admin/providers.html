@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% set active_page = 'providers' %}
+{% block title %}Staff / Providers{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Staff / Service Providers</div>
+        <div class="page-subtitle">Manage provider accounts and their services.</div>
+    </div>
+    <a href="{{ url_for('admin_add_provider') }}" class="btn btn-agende"><i class="bi bi-plus-lg me-1"></i> Add Provider</a>
+</div>
+
+<div class="table-responsive card-agende p-0">
+    <table class="table table-agende mb-0">
+        <thead>
+            <tr><th>Name</th><th>Email</th><th>Service</th><th>Appointments</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for p in providers %}
+            <tr>
+                <td>{{ p.provider_name }}</td>
+                <td>{{ p.email }}</td>
+                <td>{{ p.service_name }}</td>
+                <td>{{ p.total_appointments }}</td>
+                <td><span class="status-badge {{ 'status-confirmed' if p.is_active else 'status-cancelled' }}">{{ 'Active' if p.is_active else 'Inactive' }}</span></td>
+                <td>
+                    <a href="{{ url_for('admin_edit_provider', provider_id=p.id) }}" class="btn btn-sm btn-outline-agende">Edit</a>
+                    <a href="{{ url_for('admin_view_provider_schedule', provider_id=p.id) }}" class="btn btn-sm btn-outline-agende">Schedule</a>
+                    <form method="POST" action="{{ url_for('admin_toggle_provider', provider_id=p.id) }}" class="d-inline" onsubmit="return confirmAction('{{ 'Deactivate' if p.is_active else 'Activate' }} this provider?')">
+                        <button type="submit" class="btn btn-sm {{ 'btn-outline-danger' if p.is_active else 'btn-outline-agende' }}">
+                            {{ 'Deactivate' if p.is_active else 'Activate' }}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No providers yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% set active_page = 'appointments' %}
+{% block title %}Reschedule Appointment{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Reschedule Appointment #{{ appointment.id }}</div>
+        <div class="page-subtitle">{{ appointment.service_name }} with {{ appointment.provider_name }}</div>
+    </div>
+</div>
+
+<div class="card-agende" style="max-width: 500px;">
+    <p class="text-muted">Current schedule: <strong>{{ appointment.appointment_date }} at {{ appointment.start_time }}</strong></p>
+    <form method="POST" action="{{ url_for('reschedule_appointment', appointment_id=appointment.id) }}">
+        <div class="mb-3">
+            <label class="form-label">New Date</label>
+            <input type="date" class="form-control" name="appointment_date" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">New Time</label>
+            <input type="time" class="form-control" name="start_time" required>
+        </div>
+        <button type="submit" class="btn btn-agende w-100">Confirm Reschedule</button>
+    </form>
+</div>
+
+{% endblock %}

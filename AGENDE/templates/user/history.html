@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% set active_page = 'history' %}
+{% block title %}Appointment History{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Appointment History</div>
+        <div class="page-subtitle">Your completed and cancelled appointments.</div>
+    </div>
+</div>
+
+<div class="table-responsive card-agende p-0">
+    <table class="table table-agende mb-0">
+        <thead>
+            <tr><th>ID</th><th>Date</th><th>Time</th><th>Service</th><th>Provider</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            {% for a in appointments %}
+            <tr>
+                <td>#{{ a.id }}</td>
+                <td>{{ a.appointment_date }}</td>
+                <td>{{ a.start_time }}</td>
+                <td>{{ a.service_name }}</td>
+                <td>{{ a.provider_name }}</td>
+                <td><span class="status-badge status-{{ a.status }}">{{ 'Did not attend' if a.status == 'no_show' else a.status|replace('_', ' ')|title }}</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No history yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

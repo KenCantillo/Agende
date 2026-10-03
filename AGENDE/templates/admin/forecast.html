@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Forecast{% endblock %}
+{% block content %}
+<div class="topbar"><div><div class="page-title">Weekly Forecast</div><div class="page-subtitle">Aggregate linear-regression estimates for planning, not individual client prediction.</div></div></div>
+{% if not forecast.available %}<div class="alert alert-warning"><strong>Forecast unavailable</strong><br>{{ forecast.message }}</div>
+{% else %}
+<div class="alert alert-info">Model uses {{ forecast.rows|length }} historical weeks. Evaluation uses a chronological 80/20 train/test split. Forecast counts are never shown below zero.</div>
+<div class="row g-3 mb-4">
+{% for title, model in [('Appointment Count',forecast.appointment_model),('Did not attend Count',forecast.no_show_model)] %}
+<div class="col-md-6"><div class="card-agende"><h5>{{ title }} Model</h5><div>MAE: {{ '%.2f'|format(model.mae) if model.mae is not none else 'N/A' }}</div><div>RMSE: {{ '%.2f'|format(model.rmse) if model.rmse is not none else 'N/A' }}</div><div>R²: {{ '%.3f'|format(model.r2) if model.r2 is not none else 'N/A' }}</div></div></div>
+{% endfor %}</div>
+<div class="card-agende p-0 table-responsive"><table class="table table-agende mb-0"><thead><tr><th>Week starting</th><th>Forecast appointments</th><th>Forecast did not attend</th></tr></thead><tbody>{% for row in forecast.future %}<tr><td>{{ row.week_start }}</td><td>{{ row.appointments }}</td><td>{{ row.no_shows }}</td></tr>{% endfor %}</tbody></table></div>
+<p class="text-muted small mt-3">Forecasts are estimates based on historical linear trends. Holidays, seasonality, service changes, and staffing changes may affect actual results.</p>
+{% endif %}{% endblock %}

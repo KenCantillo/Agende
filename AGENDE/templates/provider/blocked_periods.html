@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Block Time{% endblock %}
+{% block content %}
+<div class="topbar"><div><div class="page-title">Block Unavailable Time</div><div class="page-subtitle">Prevent bookings during breaks, leave, or other unavailable periods.</div></div></div>
+<div class="card-agende mb-4"><form method="post" class="row g-3">
+<div class="col-md-4"><label class="form-label">Start</label><input type="datetime-local" name="start_datetime" class="form-control" required></div>
+<div class="col-md-4"><label class="form-label">End</label><input type="datetime-local" name="end_datetime" class="form-control" required></div>
+<div class="col-md-3"><label class="form-label">Reason</label><input name="reason" class="form-control" maxlength="255" placeholder="Optional"></div>
+<div class="col-md-1 d-flex align-items-end"><button class="btn btn-agende w-100">Save</button></div>
+</form></div>
+<div class="card-agende p-0 table-responsive"><table class="table table-agende mb-0"><thead><tr><th>Start</th><th>End</th><th>Reason</th><th>Action</th></tr></thead><tbody>
+{% for p in periods %}<tr><td>{{ p.start_datetime }}</td><td>{{ p.end_datetime }}</td><td>{{ p.reason or '—' }}</td><td><form method="post" action="{{ url_for('provider_delete_blocked_period', period_id=p.id) }}" onsubmit="return confirm('Remove this blocked period?')"><button class="btn btn-sm btn-outline-danger">Remove</button></form></td></tr>
+{% else %}<tr><td colspan="4" class="text-center text-muted p-4">No blocked periods configured.</td></tr>{% endfor %}
+</tbody></table></div>{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% set active_page = 'appointments' %}
+{% block title %}All Appointments{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">All Appointments</div>
+        <div class="page-subtitle">System-wide appointment management.</div>
+    </div>
+</div>
+
+<div class="card-agende mb-3">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label mb-1">Search</label>
+            <input type="text" class="form-control" name="q" placeholder="Client, provider, service" value="{{ search_query }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label mb-1">Status</label>
+            <select class="form-select" name="status">
+                <option value="">All</option>
+                {% for s in ['pending','confirmed','completed','cancelled'] %}
+                <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label mb-1">Date</label>
+            <input type="date" class="form-control" name="date" value="{{ date_filter }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label mb-1">Provider</label>
+            <select class="form-select" name="provider_id">
+                <option value="">All</option>
+                {% for p in providers %}
+                <option value="{{ p.id }}" {% if provider_filter == p.id|string %}selected{% endif %}>{{ p.provider_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label mb-1">Service</label>
+            <select class="form-select" name="service_id">
+                <option value="">All</option>
+                {% for s in services %}
+                <option value="{{ s.id }}" {% if service_filter == s.id|string %}selected{% endif %}>{{ s.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-outline-agende w-100">Go</button>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive card-agende p-0">
+    <table class="table table-agende mb-0">
+        <thead>
+            <tr><th>ID</th><th>Date</th><th>Time</th><th>Client</th><th>Provider</th><th>Service</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for a in appointments %}
+            <tr>
+                <td>#{{ a.id }}</td>
+                <td>{{ a.appointment_date }}</td>
+                <td>{{ a.start_time }}</td>
+                <td>{{ a.client_name }}</td>
+                <td>{{ a.provider_name }}</td>
+                <td>{{ a.service_name }}</td>
+                <td><span class="status-badge status-{{ a.status }}">{{ 'Did not attend' if a.status == 'no_show' else a.status|replace('_', ' ')|title }}</span></td>
+                <td>
+                    <div class="d-flex gap-1">
+                        {% if a.status == 'pending' %}
+                        <form method="POST" action="{{ url_for('admin_update_status', appointment_id=a.id) }}">
+                            <input type="hidden" name="status" value="confirmed">
+                            <button type="submit" class="btn btn-sm btn-agende">Confirm</button>
+                        </form>
+                        {% endif %}
+                        {% if a.status == 'confirmed' %}
+                        <form method="POST" action="{{ url_for('admin_update_status', appointment_id=a.id) }}">
+                            <input type="hidden" name="status" value="completed">
+                            <button type="submit" class="btn btn-sm btn-agende">Complete</button>
+                        </form>
+                        {% endif %}
+                        {% if a.status in ['pending','confirmed'] %}
+                        <form method="POST" action="{{ url_for('admin_update_status', appointment_id=a.id) }}" onsubmit="return confirmCancel(event)">
+                            <input type="hidden" name="status" value="cancelled">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="text-center text-muted py-4">No appointments found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

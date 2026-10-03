@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="topbar"><div><div class="page-title">Reports & Export</div><div class="page-subtitle">Download appointment records for reporting and further analysis.</div></div></div>
+<div class="card-agende"><h5>Appointment Report</h5><p class="text-muted">Exports appointment ID, client, provider, service, date, time, status, and creation timestamp.</p><a class="btn btn-agende" href="{{ url_for('export_appointments_csv') }}"><i class="bi bi-download"></i> Export Appointments CSV</a></div>
+{% endblock %}

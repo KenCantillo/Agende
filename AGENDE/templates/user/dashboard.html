@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% set active_page = 'dashboard' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Welcome back, {{ session.get('name') }}</div>
+        <div class="page-subtitle">Here's a summary of your appointments.</div>
+    </div>
+    <a href="{{ url_for('book_appointment') }}" class="btn btn-agende"><i class="bi bi-calendar-plus me-1"></i> Book Appointment</a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-primary-soft"><i class="bi bi-journal-check"></i></div>
+            <div>
+                <div class="kpi-value">{{ total_appointments }}</div>
+                <div class="kpi-label">My Appointments</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-info-soft"><i class="bi bi-calendar-day"></i></div>
+            <div>
+                <div class="kpi-value">{{ today_appointments }}</div>
+                <div class="kpi-label">Today's Appointments</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-warning-soft"><i class="bi bi-hourglass-split"></i></div>
+            <div>
+                <div class="kpi-value">{{ pending_appointments }}</div>
+                <div class="kpi-label">Pending</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-success-soft"><i class="bi bi-check-circle"></i></div>
+            <div>
+                <div class="kpi-value">{{ completed_appointments }}</div>
+                <div class="kpi-label">Completed</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-primary-soft"><i class="bi bi-calendar-week"></i></div>
+            <div>
+                <div class="kpi-value">{{ upcoming_appointments }}</div>
+                <div class="kpi-label">Upcoming</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-7">
+        <div class="card-agende h-100">
+            <div class="section-title">My Appointment Activity</div>
+            {% if chart_rows %}
+            <canvas id="activityChart" height="120"></canvas>
+            {% else %}
+            <p class="text-muted mb-0">No appointment activity yet. Book your first appointment to see your trend here.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card-agende h-100">
+            <div class="section-title">Upcoming Appointments</div>
+            {% if upcoming_list %}
+                {% for a in upcoming_list %}
+                <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                    <div>
+                        <div class="fw-semibold">{{ a.service_name }}</div>
+                        <div class="text-muted" style="font-size:0.78rem;">with {{ a.provider_name }} &middot; {{ a.appointment_date }} at {{ a.start_time }}</div>
+                    </div>
+                    <span class="status-badge status-{{ a.status }}">{{ 'Did not attend' if a.status == 'no_show' else a.status|replace('_', ' ')|title }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted mb-0">You have no upcoming appointments.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card-agende h-100">
+            <div class="section-title">My Recent Appointment Activity</div>
+            {% if recent_activity %}
+                {% for h in recent_activity %}
+                <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                    <div>
+                        <div class="fw-semibold text-capitalize">{{ h.action }}</div>
+                        <div class="text-muted" style="font-size:0.78rem;">{{ h.service_name }} &middot; {{ h.appointment_date }}</div>
+                    </div>
+                    <span class="text-muted" style="font-size:0.75rem;">{{ h.created_at.strftime('%b %d, %I:%M %p') }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted mb-0">No recent activity yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-agende h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="section-title mb-0">My Notifications</div>
+                <a href="{{ url_for('user_notifications') }}" class="text-decoration-none" style="font-size:0.78rem;">View all</a>
+            </div>
+            {% if notifications %}
+                {% for n in notifications %}
+                <div class="notification-item">
+                    <div class="notification-dot {{ 'read' if n.is_read }}"></div>
+                    <div>
+                        <div style="font-size:0.85rem;">{{ n.message }}</div>
+                        <div class="text-muted" style="font-size:0.72rem;">{{ n.created_at.strftime('%b %d, %Y %I:%M %p') }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted mb-0">You have no notifications.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{% if chart_rows %}
+<script>
+const ctx = document.getElementById('activityChart');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ chart_rows | map(attribute='ym') | list | tojson }},
+        datasets: [{
+            label: 'Appointments',
+            data: {{ chart_rows | map(attribute='total') | list | tojson }},
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99,102,241,0.12)',
+            fill: true,
+            tension: 0.35
+        }]
+    },
+    options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

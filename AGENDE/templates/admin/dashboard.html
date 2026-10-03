@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% set active_page = 'dashboard' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">System Dashboard</div>
+        <div class="page-subtitle">Overview of all appointments across AGENDE.</div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-primary-soft"><i class="bi bi-journal-check"></i></div>
+            <div><div class="kpi-value">{{ total_appointments }}</div><div class="kpi-label">Total Appointments</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-info-soft"><i class="bi bi-calendar-day"></i></div>
+            <div><div class="kpi-value">{{ today_appointments }}</div><div class="kpi-label">Today's Appointments</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-warning-soft"><i class="bi bi-hourglass-split"></i></div>
+            <div><div class="kpi-value">{{ pending_appointments }}</div><div class="kpi-label">Pending</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-success-soft"><i class="bi bi-check-circle"></i></div>
+            <div><div class="kpi-value">{{ completed_this_month }}</div><div class="kpi-label">Completed This Month</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-danger-soft"><i class="bi bi-exclamation-triangle"></i></div>
+            <div><div class="kpi-value">{{ conflict_count }}</div><div class="kpi-label">Schedule Conflicts</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-7">
+        <div class="card-agende h-100">
+            <div class="section-title">Appointment Trends</div>
+            {% if trend_rows %}
+            <canvas id="trendChart" height="110"></canvas>
+            {% else %}
+            <p class="text-muted mb-0">No data yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card-agende h-100">
+            <div class="section-title">Schedule Conflicts</div>
+            {% for c in conflict_rows %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                <div style="font-size:0.85rem;">{{ c.appointment_date }} at {{ c.start_time }}</div>
+                <span class="status-badge status-cancelled">{{ c.total }} bookings</span>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No conflicts detected. Everything looks good.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-6">
+        <div class="card-agende h-100">
+            <div class="section-title">Today's Appointments</div>
+            {% for a in todays_appointments %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                <div>
+                    <div class="fw-semibold" style="font-size:0.85rem;">{{ a.start_time }} &middot; {{ a.service_name }}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">{{ a.client_name }} with {{ a.provider_name }}</div>
+                </div>
+                <span class="status-badge status-{{ a.status }}">{{ 'Did not attend' if a.status == 'no_show' else a.status|replace('_', ' ')|title }}</span>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No appointments today.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-agende h-100">
+            <div class="section-title">Upcoming Appointments</div>
+            {% for a in upcoming %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                <div>
+                    <div class="fw-semibold" style="font-size:0.85rem;">{{ a.appointment_date }} {{ a.start_time }} &middot; {{ a.service_name }}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">{{ a.client_name }} with {{ a.provider_name }}</div>
+                </div>
+                <span class="status-badge status-{{ a.status }}">{{ 'Did not attend' if a.status == 'no_show' else a.status|replace('_', ' ')|title }}</span>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No upcoming appointments.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card-agende h-100">
+            <div class="section-title">Staff Overview</div>
+            {% for s in staff_overview %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                <div>
+                    <div class="fw-semibold" style="font-size:0.85rem;">{{ s.provider_name }}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">{{ s.service_name }}</div>
+                </div>
+                <span class="fw-semibold">{{ s.total_appointments }}</span>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No providers yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-agende h-100">
+            <div class="section-title">Recent Activity</div>
+            {% for h in recent_activity %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                <div>
+                    <div class="fw-semibold text-capitalize" style="font-size:0.85rem;">{{ h.action }} &middot; {{ h.client_name }}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">by {{ h.performed_by_name }}</div>
+                </div>
+                <span class="text-muted" style="font-size:0.75rem;">{{ h.created_at.strftime('%b %d, %I:%M %p') }}</span>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No recent activity.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{% if trend_rows %}
+<script>
+new Chart(document.getElementById('trendChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ trend_rows | map(attribute='ym') | list | tojson }},
+        datasets: [{
+            label: 'Appointments',
+            data: {{ trend_rows | map(attribute='total') | list | tojson }},
+            backgroundColor: '#6366f1',
+            borderRadius: 6
+        }]
+    },
+    options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

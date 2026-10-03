@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% set active_page = 'book' %}
+{% block title %}Book Appointment{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Book an Appointment</div>
+        <div class="page-subtitle">Choose a service, provider, date and time.</div>
+    </div>
+</div>
+
+<div class="card-agende" style="max-width: 640px;">
+    <form method="POST" action="{{ url_for('book_appointment') }}">
+        <div class="mb-3">
+            <label class="form-label">Service</label>
+            <select class="form-select" name="service_id" required>
+                <option value="" disabled selected>Select a service</option>
+                {% for s in services %}
+                <option value="{{ s.id }}">{{ s.name }} ({{ s.duration }} mins)</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Provider</label>
+            <select class="form-select" name="provider_id" required>
+                <option value="" disabled selected>Select a provider</option>
+                {% for p in providers %}
+                <option value="{{ p.id }}" data-service="{{ p.service_id }}">{{ p.provider_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Date</label>
+                <input type="date" class="form-control" name="appointment_date" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Time</label>
+                <input type="time" class="form-control" name="start_time" required>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Notes (optional)</label>
+            <textarea class="form-control" name="notes" rows="3" placeholder="Anything the provider should know"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-agende w-100">Book Appointment</button>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Simple UX helper: only show providers that offer the selected service.
+// (The server double-checks this rule anyway, so this is just a convenience.)
+const serviceSelect = document.querySelector('select[name="service_id"]');
+const providerSelect = document.querySelector('select[name="provider_id"]');
+const allProviderOptions = Array.from(providerSelect.options);
+
+serviceSelect.addEventListener('change', function () {
+    const selectedService = this.value;
+    providerSelect.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    placeholder.textContent = 'Select a provider';
+    providerSelect.appendChild(placeholder);
+
+    allProviderOptions.forEach(function (opt) {
+        if (!opt.dataset.service || opt.dataset.service === selectedService) {
+            providerSelect.appendChild(opt.cloneNode(true));
+        }
+    });
+});
+</script>
+{% endblock %}

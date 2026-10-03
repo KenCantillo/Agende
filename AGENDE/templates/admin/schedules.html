@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% set active_page = 'schedules' %}
+{% block title %}Provider Schedules{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Provider Schedules</div>
+        <div class="page-subtitle">Manage weekly availability for all providers.</div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card-agende">
+            <div class="section-title">Add Schedule</div>
+            <form method="POST" action="{{ url_for('admin_add_schedule') }}">
+                <div class="mb-3">
+                    <label class="form-label">Provider</label>
+                    <select class="form-select" name="provider_id" required>
+                        {% for p in providers %}
+                        <option value="{{ p.id }}">{{ p.provider_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Day of Week</label>
+                    <select class="form-select" name="day_of_week" required>
+                        {% for i in range(7) %}
+                        <option value="{{ i }}">{{ day_names[i] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label class="form-label">Start</label>
+                        <input type="time" class="form-control" name="start_time" required>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="form-label">End</label>
+                        <input type="time" class="form-control" name="end_time" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-agende w-100">Add Schedule</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card-agende p-0">
+            <div class="table-responsive">
+                <table class="table table-agende mb-0">
+                    <thead><tr><th>Provider</th><th>Day</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        {% for s in schedules %}
+                        <tr>
+                            <td>{{ s.provider_name }}</td>
+                            <td>{{ day_names[s.day_of_week] }}</td>
+                            <td>{{ s.start_time }} - {{ s.end_time }}</td>
+                            <td><span class="status-badge {{ 'status-confirmed' if s.is_available else 'status-cancelled' }}">{{ 'Available' if s.is_available else 'Off' }}</span></td>
+                            <td>
+                                <form method="POST" action="{{ url_for('admin_toggle_schedule', schedule_id=s.id) }}">
+                                    <button type="submit" class="btn btn-sm {{ 'btn-outline-danger' if s.is_available else 'btn-outline-agende' }}">
+                                        {{ 'Disable' if s.is_available else 'Enable' }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center text-muted py-4">No schedules set yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

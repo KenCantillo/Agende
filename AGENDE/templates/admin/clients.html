@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% set active_page = 'clients' %}
+{% block title %}Clients{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Clients</div>
+        <div class="page-subtitle">All registered clients in the system.</div>
+    </div>
+</div>
+
+<div class="card-agende mb-3">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-md-6">
+            <label class="form-label mb-1">Search</label>
+            <input type="text" class="form-control" name="q" placeholder="Name or email" value="{{ search_query }}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-outline-agende w-100">Search</button>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive card-agende p-0">
+    <table class="table table-agende mb-0">
+        <thead>
+            <tr><th>Name</th><th>Email</th><th>Phone</th><th>Appointments</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for c in clients %}
+            <tr>
+                <td>{{ c.name }}</td>
+                <td>{{ c.email }}</td>
+                <td>{{ c.phone or "\u2014" }}</td>
+                <td>{{ c.total_appointments }}</td>
+                <td><span class="status-badge {{ 'status-confirmed' if c.is_active else 'status-cancelled' }}">{{ 'Active' if c.is_active else 'Inactive' }}</span></td>
+                <td>
+                    <a href="{{ url_for('admin_view_client', client_id=c.id) }}" class="btn btn-sm btn-outline-agende">View</a>
+                    <form method="POST" action="{{ url_for('admin_toggle_client', client_id=c.id) }}" class="d-inline" onsubmit="return confirmAction('{{ 'Deactivate' if c.is_active else 'Activate' }} this client?')">
+                        <button type="submit" class="btn btn-sm {{ 'btn-outline-danger' if c.is_active else 'btn-outline-agende' }}">
+                            {{ 'Deactivate' if c.is_active else 'Activate' }}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No clients found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

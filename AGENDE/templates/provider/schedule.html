@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% set active_page = 'schedule' %}
+{% block title %}My Availability{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">My Availability</div>
+        <div class="page-subtitle">Set the days and times you accept appointments.</div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card-agende">
+            <div class="section-title">Add Availability</div>
+            <form method="POST" action="{{ url_for('provider_schedule') }}">
+                <div class="mb-3">
+                    <label class="form-label">Day of Week</label>
+                    <select class="form-select" name="day_of_week" required>
+                        {% for i in range(7) %}
+                        <option value="{{ i }}">{{ day_names[i] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label class="form-label">Start Time</label>
+                        <input type="time" class="form-control" name="start_time" required>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="form-label">End Time</label>
+                        <input type="time" class="form-control" name="end_time" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-agende w-100">Add Schedule</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card-agende">
+            <div class="section-title">Current Schedule</div>
+            {% for s in schedules %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                <div style="font-size:0.87rem;">
+                    <strong>{{ day_names[s.day_of_week] }}</strong> &middot; {{ s.start_time }} - {{ s.end_time }}
+                </div>
+                <form method="POST" action="{{ url_for('provider_toggle_schedule', schedule_id=s.id) }}">
+                    <button type="submit" class="btn btn-sm {{ 'btn-outline-danger' if s.is_available else 'btn-outline-agende' }}">
+                        {{ 'Set Unavailable' if s.is_available else 'Set Available' }}
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No schedule set yet. Add your availability using the form.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

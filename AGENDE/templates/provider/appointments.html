@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% set active_page = 'appointments' %}
+{% block title %}My Appointments{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">My Appointments</div>
+        <div class="page-subtitle">Appointments assigned to you.</div>
+    </div>
+</div>
+
+<div class="card-agende mb-3">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label mb-1">Search Client</label>
+            <input type="text" class="form-control" name="q" placeholder="Client name" value="{{ search_query }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label mb-1">Status</label>
+            <select class="form-select" name="status">
+                <option value="">All</option>
+                {% for s in ['pending','confirmed','completed','cancelled','rejected','no_show'] %}
+                <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label mb-1">Date</label>
+            <input type="date" class="form-control" name="date" value="{{ date_filter }}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-outline-agende w-100">Filter</button>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive card-agende p-0">
+    <table class="table table-agende mb-0">
+        <thead>
+            <tr><th>ID</th><th>Date</th><th>Time</th><th>Service</th><th>Client</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for a in appointments %}
+            <tr>
+                <td>#{{ a.id }}</td>
+                <td>{{ a.appointment_date }}</td>
+                <td>{{ a.start_time }}</td>
+                <td>{{ a.service_name }}</td>
+                <td>{{ a.client_name }}</td>
+                <td><span class="status-badge status-{{ a.status }}">{{ 'Did not attend' if a.status == 'no_show' else a.status|replace('_', ' ')|title }}</span></td>
+                <td>
+                    {% if a.status == 'pending' %}
+                    <form method="POST" action="{{ url_for('provider_confirm_appointment', appointment_id=a.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-agende">Confirm</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('provider_reject_appointment', appointment_id=a.id) }}" class="d-inline" onsubmit="return confirm('Reject this appointment request?')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('provider_cancel_appointment', appointment_id=a.id) }}" class="d-inline" onsubmit="return confirmCancel(event)">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Cancel</button>
+                    </form>
+                    {% elif a.status == 'confirmed' %}
+                    <form method="POST" action="{{ url_for('provider_complete_appointment', appointment_id=a.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-agende">Mark Completed</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('provider_cancel_appointment', appointment_id=a.id) }}" class="d-inline" onsubmit="return confirmCancel(event)">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('provider_mark_no_show', appointment_id=a.id) }}" class="d-inline" onsubmit="return confirm('Mark this appointment as 'Did not attend'?')">
+                        <button type="submit" class="btn btn-sm btn-outline-warning">Did not attend</button>
+                    </form>
+                    {% else %}
+                    <span class="text-muted">No actions</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="text-center text-muted py-4">No appointments found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

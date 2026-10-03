@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% set active_page = 'providers' %}
+{% block title %}{{ 'Edit Provider' if provider else 'Add Provider' }}{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">{{ 'Edit Provider' if provider else 'Add New Provider' }}</div>
+        <div class="page-subtitle">{{ 'Update provider information.' if provider else 'Create a new provider / staff account.' }}</div>
+    </div>
+</div>
+
+<div class="card-agende" style="max-width: 500px;">
+    <form method="POST" action="{{ url_for('admin_edit_provider', provider_id=provider.id) if provider else url_for('admin_add_provider') }}">
+        <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" name="name" value="{{ provider.name if provider else '' }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email Address</label>
+            {% if provider %}
+            <input type="email" class="form-control" value="{{ provider.email }}" disabled>
+            <div class="form-text">Email cannot be changed.</div>
+            {% else %}
+            <input type="email" class="form-control" name="email" required>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Phone Number</label>
+            <input type="text" class="form-control" name="phone" value="{{ provider.phone if provider else '' }}">
+        </div>
+        {% if not provider %}
+        <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" name="password" required>
+        </div>
+        {% endif %}
+        <div class="mb-3">
+            <label class="form-label">Assigned Service</label>
+            <select class="form-select" name="service_id" required>
+                {% for s in services %}
+                <option value="{{ s.id }}" {% if provider and provider.service_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-agende w-100">{{ 'Save Changes' if provider else 'Create Provider' }}</button>
+    </form>
+</div>
+
+{% endblock %}

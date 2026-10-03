@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% set active_page = 'calendar' %}
+{% block title %}Calendar{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">My Calendar</div>
+        <div class="page-subtitle">A simple list view of your upcoming and past appointments.</div>
+    </div>
+</div>
+
+{% set grouped = {} %}
+{% for a in appointments %}
+    {% if grouped.update({a.appointment_date: (grouped.get(a.appointment_date, []) + [a])}) %}{% endif %}
+{% endfor %}
+
+<div class="row g-3">
+    {% for day, items in grouped.items() %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card-agende h-100">
+            <div class="fw-bold mb-2">{{ day }}</div>
+            {% for a in items %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                <div>
+                    <div class="fw-semibold" style="font-size:0.85rem;">{{ a.start_time }} &middot; {{ a.service_name }}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">with {{ a.provider_name }}</div>
+                </div>
+                <span class="status-badge status-{{ a.status }}">{{ 'Did not attend' if a.status == 'no_show' else a.status|replace('_', ' ')|title }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="card-agende text-center text-muted py-5">You have no scheduled appointments.</div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

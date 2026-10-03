@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% set active_page = 'dashboard' %}
+{% block title %}Provider Dashboard{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Welcome back, {{ session.get('name') }}</div>
+        <div class="page-subtitle">Here's your schedule overview.</div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-info-soft"><i class="bi bi-calendar-day"></i></div>
+            <div><div class="kpi-value">{{ today_count }}</div><div class="kpi-label">Today's Appointments</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-warning-soft"><i class="bi bi-hourglass-split"></i></div>
+            <div><div class="kpi-value">{{ pending_count }}</div><div class="kpi-label">Pending</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-primary-soft"><i class="bi bi-check2-circle"></i></div>
+            <div><div class="kpi-value">{{ confirmed_count }}</div><div class="kpi-label">Confirmed</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-success-soft"><i class="bi bi-check-circle"></i></div>
+            <div><div class="kpi-value">{{ completed_count }}</div><div class="kpi-label">Completed</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-danger-soft"><i class="bi bi-exclamation-triangle"></i></div>
+            <div><div class="kpi-value">{{ conflicts|length }}</div><div class="kpi-label">Schedule Conflicts</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-6">
+        <div class="card-agende h-100">
+            <div class="section-title">Today's Schedule</div>
+            {% for a in todays_schedule %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                <div>
+                    <div class="fw-semibold" style="font-size:0.85rem;">{{ a.start_time }} &middot; {{ a.service_name }}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">Client: {{ a.client_name }}</div>
+                </div>
+                <span class="status-badge status-{{ a.status }}">{{ 'Did not attend' if a.status == 'no_show' else a.status|replace('_', ' ')|title }}</span>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No appointments scheduled today.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-agende h-100">
+            <div class="section-title">Upcoming Appointments</div>
+            {% for a in upcoming %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                <div>
+                    <div class="fw-semibold" style="font-size:0.85rem;">{{ a.appointment_date }} {{ a.start_time }} &middot; {{ a.service_name }}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">Client: {{ a.client_name }}</div>
+                </div>
+                <span class="status-badge status-{{ a.status }}">{{ 'Did not attend' if a.status == 'no_show' else a.status|replace('_', ' ')|title }}</span>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No upcoming appointments.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card-agende h-100">
+            <div class="section-title">My Availability</div>
+            {% for s in availability %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                <div style="font-size:0.85rem;">{{ day_names[s.day_of_week] }} &middot; {{ s.start_time }} - {{ s.end_time }}</div>
+                <span class="status-badge {{ 'status-confirmed' if s.is_available else 'status-cancelled' }}">{{ 'Available' if s.is_available else 'Off' }}</span>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No availability set. <a href="{{ url_for('provider_schedule') }}">Add your schedule</a>.</p>
+            {% endfor %}
+            <a href="{{ url_for('provider_schedule') }}" class="btn btn-outline-agende btn-sm mt-2">Manage Availability</a>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-agende h-100">
+            <div class="section-title">Recent Activity</div>
+            {% for h in recent_activity %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                <div class="fw-semibold text-capitalize" style="font-size:0.85rem;">{{ h.action }} &middot; {{ h.service_name }}</div>
+                <span class="text-muted" style="font-size:0.75rem;">{{ h.created_at.strftime('%b %d, %I:%M %p') }}</span>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No recent activity.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

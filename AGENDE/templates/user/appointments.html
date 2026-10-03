@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% set active_page = 'appointments' %}
+{% block title %}My Appointments{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">My Appointments</div>
+        <div class="page-subtitle">All appointments you have booked.</div>
+    </div>
+    <a href="{{ url_for('book_appointment') }}" class="btn btn-agende"><i class="bi bi-calendar-plus me-1"></i> Book Appointment</a>
+</div>
+
+<div class="card-agende mb-3">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label mb-1">Search</label>
+            <input type="text" class="form-control" name="q" placeholder="Service or provider" value="{{ search_query }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label mb-1">Status</label>
+            <select class="form-select" name="status">
+                <option value="">All</option>
+                {% for s in ['pending','confirmed','completed','cancelled'] %}
+                <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label mb-1">Date</label>
+            <input type="date" class="form-control" name="date" value="{{ date_filter }}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-outline-agende w-100">Filter</button>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive card-agende p-0">
+    <table class="table table-agende mb-0">
+        <thead>
+            <tr>
+                <th>ID</th><th>Date</th><th>Time</th><th>Service</th><th>Provider</th><th>Status</th><th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in appointments %}
+            <tr>
+                <td>#{{ a.id }}</td>
+                <td>{{ a.appointment_date }}</td>
+                <td>{{ a.start_time }}</td>
+                <td>{{ a.service_name }}</td>
+                <td>{{ a.provider_name }}</td>
+                <td><span class="status-badge status-{{ a.status }}">{{ 'Did not attend' if a.status == 'no_show' else a.status|replace('_', ' ')|title }}</span></td>
+                <td>
+                    <a href="{{ url_for('user_view_appointment', appointment_id=a.id) }}" class="btn btn-sm btn-outline-agende">View</a>
+                    {% if a.status in ['pending','confirmed'] %}
+                    <a href="{{ url_for('reschedule_appointment', appointment_id=a.id) }}" class="btn btn-sm btn-outline-agende">Reschedule</a>
+                    <form method="POST" action="{{ url_for('cancel_appointment', appointment_id=a.id) }}" class="d-inline" onsubmit="return confirmCancel(event)">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="text-center text-muted py-4">No appointments found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

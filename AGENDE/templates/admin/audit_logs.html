@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs{% endblock %}
+{% block content %}
+<div class="topbar"><div><div class="page-title">Audit Logs</div><div class="page-subtitle">Recent tracked changes and administrative actions.</div></div></div>
+<div class="card-agende p-0 table-responsive"><table class="table table-agende mb-0"><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Entity</th><th>Record ID</th><th>Details</th></tr></thead><tbody>
+{% for log in logs %}<tr><td>{{ log.created_at }}</td><td>{{ log.user_name or 'Deleted user' }}</td><td>{{ log.action }}</td><td>{{ log.entity_name }}</td><td>{{ log.entity_id or '—' }}</td><td>{{ log.details or '—' }}</td></tr>
+{% else %}<tr><td colspan="6" class="text-center text-muted p-4">No audit activity recorded yet.</td></tr>{% endfor %}
+</tbody></table></div>{% endblock %}

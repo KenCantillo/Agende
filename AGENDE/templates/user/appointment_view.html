@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% set active_page = 'appointments' %}
+{% block title %}Appointment Details{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Appointment #{{ appointment.id }}</div>
+        <div class="page-subtitle">Details of your appointment.</div>
+    </div>
+    <a href="{{ url_for('user_appointments') }}" class="btn btn-outline-agende"><i class="bi bi-arrow-left me-1"></i> Back</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card-agende">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <div class="fw-bold fs-5">{{ appointment.service_name }}</div>
+                    <div class="text-muted">with {{ appointment.provider_name }}</div>
+                </div>
+                <span class="status-badge status-{{ appointment.status }}">{{ 'Did not attend' if appointment.status == 'no_show' else appointment.status|replace('_', ' ')|title }}</span>
+            </div>
+            <hr>
+            <div class="row g-2">
+                <div class="col-6"><span class="text-muted" style="font-size:0.78rem;">Date</span><div class="fw-semibold">{{ appointment.appointment_date }}</div></div>
+                <div class="col-6"><span class="text-muted" style="font-size:0.78rem;">Time</span><div class="fw-semibold">{{ appointment.start_time }} - {{ appointment.end_time }}</div></div>
+                <div class="col-12"><span class="text-muted" style="font-size:0.78rem;">Notes</span><div class="fw-semibold">{{ appointment.notes or "None" }}</div></div>
+            </div>
+
+            {% if appointment.status in ['pending','confirmed'] %}
+            <hr>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('reschedule_appointment', appointment_id=appointment.id) }}" class="btn btn-outline-agende">Reschedule</a>
+                <form method="POST" action="{{ url_for('cancel_appointment', appointment_id=appointment.id) }}" onsubmit="return confirmCancel(event)">
+                    <button type="submit" class="btn btn-outline-danger">Cancel Appointment</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card-agende">
+            <div class="section-title">Activity Log</div>
+            {% if history %}
+                {% for h in history %}
+                <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                    <div class="fw-semibold text-capitalize" style="font-size:0.85rem;">{{ h.action }}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">{{ h.created_at.strftime('%b %d, %I:%M %p') }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted mb-0">No activity yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

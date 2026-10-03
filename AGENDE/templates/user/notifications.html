@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% set active_page = 'notifications' %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Notifications</div>
+        <div class="page-subtitle">Updates about your appointments.</div>
+    </div>
+</div>
+
+<div class="card-agende">
+    {% for n in notifications %}
+    <div class="notification-item">
+        <div class="notification-dot {{ 'read' if n.is_read }}"></div>
+        <div class="flex-grow-1">
+            <div style="font-size:0.88rem;">{{ n.message }}</div>
+            <div class="text-muted" style="font-size:0.72rem;">{{ n.created_at.strftime('%b %d, %Y %I:%M %p') }}</div>
+        </div>
+        {% if not n.is_read %}
+        <form method="POST" action="{{ url_for('mark_notification_read', notification_id=n.id) }}">
+            <button type="submit" class="btn btn-sm btn-outline-agende">Mark as read</button>
+        </form>
+        {% endif %}
+    </div>
+    {% else %}
+    <p class="text-muted mb-0 text-center py-4">You have no notifications.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}
